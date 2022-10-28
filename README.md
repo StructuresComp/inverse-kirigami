@@ -1,4 +1,4 @@
-# slinky-is-sliding
+# inverse-kirigami
 This repository contains the code for the paper:
 - [Rapid design of fully soft deployable structures via kirigami cuts and active learning](https://arxiv.org/abs/2203.11546)
 
