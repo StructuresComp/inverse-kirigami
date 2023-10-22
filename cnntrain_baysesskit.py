@@ -159,16 +159,7 @@ def getytarget(ii,rot=120):
     xsize=np.array(imagedata).shape[0]
     ysize=np.array(imagedata).shape[1]    
     return ytarget,xsize,ysize
-    
-def dice_coef(y_true, y_pred):
-    y_true_f = y_true.flatten()# 
-    y_pred_f = y_pred.flatten()
-    intersection = sum(y_true_f * y_pred_f)
-    return (2. * intersection ) / (sum(y_true_f * y_true_f) + sum(y_pred_f * y_pred_f) )
 
-def dice_coef_loss(y_true, y_pred):
-    return 1. - dice_coef(y_true, y_pred)
-    
 def getypredict(num):
     readstringd = ''
     filestring=readstringd+"mvertr-test"+str(6)+"num"+str(num)+"_figout"
@@ -365,8 +356,6 @@ def black_box_functionrt(x, noise_level=0.01):
     filef.close()
     return msee 
 
-
-
 def black_box_function(x, noise_level=0.01):
     """Function with unknown internals we wish to maximize.
     """
@@ -447,7 +436,6 @@ def tf_ms_ssim(img1, img2, mean_metric=True, level=5):
     alpha= tf.constant(1)
     value = (tf.reduce_prod(mcs[0:level-1]**weight[0:level-1])*
                             (mssim[level-1]**weight[level-1]))#+ (tf.constant(1)-alpha)*tf.math.multiply(abs(img1-img2))
-
     if mean_metric:
         value = -tf.reduce_mean(value)
     return value
@@ -495,7 +483,7 @@ print('maxheight',str(maxheight))
 ytarget,xsize,ysize=getytarget(indexy, grot)
 
 
-numcalls=120 ## 60 
+numcalls=100 ## 60 
 numcallsinit = 0 
 totrain =1
 pretrained=1 ## 1: run the bayesian optimization; 0: read the optimized data from excel sheet
@@ -631,8 +619,6 @@ if pretrained==1 or checkperturb==1:
         neibout= neigh.kneighbors([xkir[0:latdim]])
         print(neibout[1][0][0])
         print(neibout[1][0][1])
-        print(aall[9521])
-        print(aall[9196])
 
         nsel1 = neibout[1][0][1]
 
@@ -688,8 +674,6 @@ if pretrained==1 or checkperturb==1:
                 plt.savefig('3dshape'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)+str(indexy)+str(rtall)+str(inputnum)+'_'+str(iinn_inp+1)+'.png', dpi=600, transparent=True)
             else:
                 plt.savefig('shape'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)+str(indexy)+str(rtall)+str(inputnum)+'_'+str(iinn_inp+1)+'.png', dpi=600, transparent=True)
-
-            #sys.exit()
             msee =black_box_functionrt(xkir, noise_level=0.01)  ## only works for the no image operation
             if pretrained ==100:
                 ydes = [msee]
@@ -698,8 +682,6 @@ if pretrained==1 or checkperturb==1:
                 print(str(xdes))
             vminn=0
             vmaxx=1           
-
-
             plt.figure(figsize=(15,10))
             ax=plt.subplot(1,3,1)     #
             if pretrained ==100:
@@ -790,70 +772,10 @@ if pretrained ==100:
         pboundsdes = pboundsdes +[(xkir[ii]-dtt[ii],xkir[ii]+dtt[ii])]
     print(xkir)
     print(pboundsdes)
-
-
 '''
 Start the bayesian optimization
 '''
 from skopt import gp_minimize
-
-## initialization step for res
-if rtall==2 or rtall==20:
-    rt= 2
-    readstringd = 'C:\\Users\\leixi\\Downloads\\Codes\\Codes\\'
-    if inputnum==3:
-        inpall=sio.loadmat(readstringd+'kirigamiparam.mat')
-        inpall=inpall['inpall']          
-        for ii in range(0,len(inpall)):
-            # if inpall[ii,0]==9 and inpall[ii,1]==40 and inpall[ii,2]==20:
-            if inpall[ii,0]==4 and inpall[ii,1]==60 and inpall[ii,2]==80:
-                iicor=ii
-        
-        
-    elif inputnum==21:
-        rows, cols = (5,latdim+1)
-        x0 = [[0 for i in range(cols)] for j in range(rows)]
-        y0=[]
-        #yc0 = []
-        print(x0)
-
-        for ncc in range(0,rows):
-            x0[ncc]=list(inpall[-1,:])+[.2/5*(ncc+1)]
-            msee=black_box_functionrt(x0[ncc], noise_level=0.001)
-            y0=y0+[msee]
-            #yc0 = yc0 + [msec]
-    df=pd.concat([pd.DataFrame({'xx':x0}),pd.DataFrame({'yy':y0})], axis=1)
-    df.to_csv(ssxy+'.csv',index=False,sep=',')   
-    print(y0)
-    
-    [zlatsold, zangsold]=inputvae(x0[0][0:-1],0,latdim) ## latent space, latent angle space
-    figureoutoldbase=vae.manifoldnd(d=1,ll=zlatsold,cmap='viridis')
-    scalee = 1.2
-    figureoutoldbase = normalize(figureoutoldbase,scalee)
-    
-    plt.figure(figsize=(15,10))
-    ax=plt.subplot(1,3,1)     #
-    plt.imshow(figureoutoldbase,cmap=plt.cm.jet,vmin=vminn,vmax=vmaxx)
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    ax=plt.subplot(1,3,2)     #
-    ytarget,xsize,ysize=getytarget(indexy, grot)
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    print(np.max(ytarget))
-    plt.imshow(ytarget,cmap=plt.cm.jet,vmin=vminn,vmax=vmaxx)
-
-    ypred,xsizepred,ysizepred = getypredict(1) ## 3d
-    
-    ax=plt.subplot(1,3,3)     
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    print(np.max(ypred))
-    plt.imshow(ypred,cmap=plt.cm.jet,vmin=vminn,vmax=vmaxx)
-    plt.savefig('bayesoutput0'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)+str(indexy)+str(rt)+str(inputnum)+'.png', dpi=600, transparent=True)
-
-
-
 rt= rtall+0
 if rtall==0:
     print('rtall'+str(0))
@@ -880,7 +802,6 @@ elif pretrained==100:
                       random_state=0)   # the random seed
 elif rtall==1 and pretrained==0:
     print('rtall'+str(1))
-
     x0 = []
     y0 = []
     if len(x0)>0:
@@ -894,7 +815,6 @@ elif rtall==1 and pretrained==0:
                         noise=0.01**2,       # the noise level (optional)
                         random_state=0)   # the random seed       
     else:
-
         res = gp_minimize(black_box_functionrt,                  # the function to minimize
                         pbounds,      # the bounds on each dimension of x
                         acq_func="EI",      # the acquisition function
@@ -902,7 +822,6 @@ elif rtall==1 and pretrained==0:
                         n_random_starts=10,  # the number of random initialization points
                         noise=0.01**2,       # the noise level (optional)
                         random_state=60)   # the random seed50 40  30 20  1234  
-
 numcallsall = numcalls+numcallsinit
 minerr=np.zeros((numcallsall,1))
 for ii in range (0,numcallsall):
@@ -932,10 +851,7 @@ else:
     ssxy='xyloc'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)+str(indexy)+str(rt)+str(inputnum)
     df=pd.concat([pd.DataFrame({'xx':res.x_iters}),pd.DataFrame({'yy':res.func_vals})], axis=1)
     df.to_csv(ssxy+'.csv',index=False,sep=',')   
-
-##
 zopt = res.x
-
 if wsize==0:    
     [zlatsold, zangsold]=inputvae(res.x[0:-1],0,latdim) ## latent space, latent angle space
 else:
@@ -960,7 +876,6 @@ else:
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 addmask(figureoutoldn,plt.cm.jet,vminn,vmaxx)
-
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 ax=plt.subplot(1,3,2)     #
@@ -971,7 +886,6 @@ print(np.max(ytarget))
 plt.imshow(ytarget,cmap=plt.cm.jet,vmin=vminn,vmax=vmaxx)
 
 ypred,xsizepred,ysizepred = getypredict(1) ## 3d
-
 ax=plt.subplot(1,3,3)     #
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
