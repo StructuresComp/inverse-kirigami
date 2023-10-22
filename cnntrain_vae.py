@@ -7,12 +7,10 @@ Created in 2022
 """
 import numpy as np
 import os
-
 from keras.layers import Input, Dense
 from keras.models import Model
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D,Dropout,Flatten,BatchNormalization
 from keras.models import Model
-
 from PIL import Image
 import sys
 import tensorflow as tf
@@ -54,75 +52,6 @@ def addmask(a,cmap,vminn,vmaxx):
     # ax.get_yaxis().set_visible(False)
     return masked_array
 
-def procrustes(X, Y, scaling=True, reflection='best'):
-
-    n,m = X.shape
-    ny,my = Y.shape
-
-    muX = X.mean(0)
-    muY = Y.mean(0)
-
-    X0 = X - muX
-    Y0 = Y - muY
-
-    ssX = np.linalg.norm(X0, 'fro')**2 #(X0**2.).sum()
-    ssY = np.linalg.norm(Y0, 'fro')**2 #(Y0**2.).sum()
-
-    # centred Frobenius norm
-    normX = np.sqrt(ssX)
-    normY = np.sqrt(ssY)
-
-    # scale to equal (unit) norm
-    X0 /= normX
-    Y0 /= normY
-
-    if my < m:
-        Y0 = np.concatenate((Y0, np.zeros(n, m-my)),0)
-
-    # optimum rotation matrix of Y
-    A = np.dot(X0.T, Y0)
-    U,s,Vt = np.linalg.svd(A,full_matrices=False)
-    V = Vt.T
-    T = np.dot(V, U.T)
-
-    if reflection is not 'best':
-
-        # does the current solution use a reflection?
-        have_reflection = np.linalg.det(T) < 0
-
-        # if that's not what was specified, force another reflection
-        if reflection != have_reflection:
-            V[:,-1] *= -1
-            s[-1] *= -1
-            T = np.dot(V, U.T)
-
-    traceTA = s.sum()
-
-    if scaling:
-
-        # optimum scaling of Y
-        b = traceTA * normX / normY
-
-        # standarised distance between X and b*Y*T + c
-        d = 1 - traceTA**2
-
-        # transformed coords
-        Z = normX*traceTA*np.dot(Y0, T) + muX
-
-    else:
-        b = 1
-        d = 1 + ssY/ssX - 2 * traceTA * normY / normX
-        Z = normY*np.dot(Y0, T) + muX
-
-    # transformation matrix
-    if my < m:
-        T = T[:my,:]
-    c = muX - b*np.dot(muY, T)
-
-    tform = {'rotation':T, 'scale':b, 'translation':c}
-
-    return d, Z, T
-
 def rotaxis_general(imagedata,image_array, nrot ):
     for i in range(0,image_array.shape[0]):
         for j in range(0,image_array.shape[0]):
@@ -138,8 +67,6 @@ def rotaxis_general(imagedata,image_array, nrot ):
         datamod=datamod+ 255-imagedatarot_array
     datamod = normalize(datamod,100)
     datamod = 255-datamod
-
-
     figure_size=4
     datamod3 = cv2.blur(datamod,(figure_size, figure_size))
     # plt.imshow(datamod3)
@@ -271,15 +198,6 @@ class VAE(keras.Model):
             "kl_loss": self.kl_loss_tracker.result(),
         }
 
-
-'''
-
-data = np.zeros((h, w, 3), dtype=np.uint8)
-data[0:256, 0:256] = [255, 0, 0] # red patch in upper left
-img = Image.fromarray(data, 'RGB')
-'''
-readstring = 'C:\\Users\\leixi\\OneDrive\\Desktop\\sci03\\'
-readstring0 = 'C:\\Users\\leixi\\Box\\allfigs_vertical\\'
 readstringtr ='C:\\Users\\leixi\\Box\\codes\\'
 checksample=0
 
@@ -334,7 +252,7 @@ if checksample==1:
 dataall=dataall_1
 numall=dataall.shape[0]
 
-ax=plt.subplot(1,1,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+ax=plt.subplot(1,1,1)    
 plt.figure(figsize=(15,15))
 plt.imshow(dataall[-13,:,:,0])
 ax.get_xaxis().set_visible(False)
@@ -373,11 +291,6 @@ if inp2d==2:
 input_dim = (dshape,dshape)
 
 if totrain==1:    
-    if inp2d ==60:
-        vae = aoi.models.VAE(input_dim, latent_dim=latdim,
-                                numlayers_encoder=2, numhidden_encoder=40,
-                                numlayers_decoder=2, numhidden_decoder=40)
-    else:
         vae = aoi.models.VAE(input_dim, latent_dim=latdim,
                                 numlayers_encoder=2, numhidden_encoder=128,
                                 numlayers_decoder=2, numhidden_decoder=128)
@@ -420,7 +333,6 @@ inpput=dataall_scaled ## input is scaled now  0 to 1
 1d vector
 '''
 
-
 ## Check the quality of reconstruction
 if totrain==0 and inp2d==20:
     dataallax=sio.loadmat('kirbioutaxis1.mat')    
@@ -432,12 +344,12 @@ if totrain==0 and inp2d==20:
     scalee = 1.2
     figureoutold = normalize(figureoutold,scalee)    
     plt.figure(figsize=(15,10))
-    ax=plt.subplot(1,2,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+    ax=plt.subplot(1,2,1)    
     plt.imshow(dataallax[0,:,:,0],label = 'Validation loss')
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 #    plt.imshow(figureoutrot)
-    ax=plt.subplot(1,2,2)     #将窗口分为两行两列四个子图，则可显示四幅图片
+    ax=plt.subplot(1,2,2)   
     plt.imshow(figureoutold,label = 'Validation loss')
     plt.rc('font',family='Times New Roman') 
     ax.get_xaxis().set_visible(False)
@@ -449,20 +361,6 @@ z_mean_vae, z_sd_vae= vae.encode(inpput)
 # sio.savemat("zmean"+str(nrot)+str(latdim)+"vae.mat",{'zmean':z_mean_vae})
 
 sio.savemat("zmean"+str(nrot)+str(latdim)+"vae"+str(inp2d)+".mat",{'zmean':z_mean_vae})
-
-# mmean = []
-# mmeanold = []
-# for ii in range(z_mean_vae.shape[0]):
-#     zz=z_mean_vae[ii,:]
-#     [zlatsold, zangsold]=flib.inputvae(zz,0,latdim) ## latent space, latent angle space
-    
-#     figureoutold=vae.manifoldnd(d=1,ll=zlatsold,cmap='viridis')
-#     mmean=mmean+[np.mean(figureoutold[55:,55:])]
-    
-#     mmeanold = mmeanold + [np.mean(dataall[ii,55:,55:,0])]
-# print('check if the image is flipped'+ str(mmean))
-# from scipy.spatial.distance import cdist
-
 ### these lines of codes are for comparisons
 if inp2d==52:
     ztarget=[2.2979518594281103, -2.2784827143791695, 3.4123991116433956, -3.027647987802186, 2.0995787238604517, 4.884079933166504]
@@ -523,41 +421,23 @@ for ii in iiall:
         
         
     plt.figure(figsize=(15,10))
-    ax=plt.subplot(1,2,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+    ax=plt.subplot(1,2,1)  
     plt.imshow(inpput[ii,:,:,0],label = 'Validation loss')
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 #    plt.imshow(figureoutrot)
-    ax=plt.subplot(1,2,2)     #将窗口分为两行两列四个子图，则可显示四幅图片
+    ax=plt.subplot(1,2,2)     
     plt.imshow(figureoutold,label = 'Validation loss')
     plt.rc('font',family='Times New Roman') 
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     plt.savefig('sample.png', dpi=600, transparent=True)
-    ax=plt.subplot(1,1,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+    ax=plt.subplot(1,1,1)     
     plt.imshow(figureoutold,label = 'Validation loss')
     plt.rc('font',family='Times New Roman') 
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     plt.savefig('sample.png', dpi=600, transparent=True)
-## save image sample
-
-    # for ii in range(500,510):
-    #     plt.figure(figsize=(15,10))
-    #     ax=plt.subplot(1,2,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
-    #     plt.imshow(inpput[ii,:,:,0],label = 'Validation loss')
-    #     ax.get_xaxis().set_visible(False)
-    #     ax.get_yaxis().set_visible(False)
-# plt.figure(figsize=(15,15))
-# ax=plt.subplot(1,1,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
-# plt.imshow(figureoutold,label = 'Validation loss')
-# plt.rc('font',family='Times New Roman') 
-# ax.get_xaxis().set_visible(False)
-# ax.get_yaxis().set_visible(False)
-# plt.savefig('sample.png', dpi=600, transparent=True)
-
-#if inout_inp>0:
-#    dataall=normalize(dataall,255)
 '''
 check the variation of z1 vs z2
 '''
@@ -689,20 +569,20 @@ for npair in range (0, len(z_samp), 2):
 #        figureout=normalize(figureout ,scalee)
         figureoutold=normalize(figureoutold,scalee)
         if i==0:
-            ax=plt.subplot(1,Ninterp,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+            ax=plt.subplot(1,Ninterp,1)    
             plt.imshow(figureoutold,label = 'Validation loss')
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
         #    plt.imshow(figureoutrot)
         elif i== Ninterp-1:
-            ax=plt.subplot(1,Ninterp,Ninterp)     #将窗口分为两行两列四个子图，则可显示四幅图片
+            ax=plt.subplot(1,Ninterp,Ninterp)     
             plt.imshow(figureoutold,label = 'Validation loss')
             plt.rc('font',family='Times New Roman') 
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
 
         else:
-            ax=plt.subplot(1,Ninterp,i+1)     #将窗口分为两行两列四个子图，则可显示四幅图片
+            ax=plt.subplot(1,Ninterp,i+1)    
             plt.imshow(figureoutold,label = 'Validation loss')
             plt.rc('font',family='Times New Roman') 
             ax.get_xaxis().set_visible(False)
@@ -718,158 +598,3 @@ for npair in range (0, len(z_samp), 2):
     elif inp2d==3:
         plt.savefig('rilotusrecon'+str(nrot)+str(latdim)+'.png', dpi=600, transparent=True)
     plt.show() 
-
-
-
-sys.exit()
-from sklearn.cluster import KMeans
-
-Sum_of_squared_distances = []
-K = range(1,50)
-for k in K:
-    km = KMeans(n_clusters=k, random_state=0).fit(z_mean_vae)
-    Sum_of_squared_distances.append(km.inertia_)
-fig = plt.figure(num=None, figsize=(10, 6), dpi=80, facecolor='w', edgecolor='k')
-plt.plot(K, Sum_of_squared_distances, 'bx-')
-
-plt.ylabel('Sum of squared distances', fontsize = 20)
-plt.xlabel('k', fontsize = 20)
-# plt.xlim([0, 300])
-# plt.ylim([0, 2.5])
-plt.xticks(fontsize=20)  
-plt.yticks(fontsize=20)
-plt.grid()
-plt.savefig('cluster'+str(nrot)+str(latdim)+str(inp2d)+'.png', dpi=600, transparent=True)
-
-#if inout_inp>0:
-if latdim>=2:
-    nc=5
-    kmeans = KMeans(n_clusters=nc, random_state=0).fit(z_mean_vae)
-    kmeans.labels_
-    kc=kmeans.cluster_centers_
-    y_kmeans=kmeans.predict(z_mean_vae)
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    ax = fig.add_subplot(111)
-
-    plt.scatter(z_mean_vae[:,1], z_mean_vae[:,2], c=y_kmeans, s=50, cmap='viridis')
-
-#    plt.scatter(kc[:, 0],kc[:, 1], c='black', s=200, alpha=0.5);
-    vminn=0
-    vmaxx=1
-    figure_size=1
-    for jj in range(0,1):
-        iiall=range(5*jj,5*(jj+1))
-        plt.figure(figsize=(15,10))
-
-        for ii in iiall:
-    #        figureout=rvae.manifold2d(d=1,l1=[kc[ii,0],kc[ii,0]],l2=[kc[ii,1],kc[ii,1]],cmap='viridis')
-
-            [zlats, zangs]=inputvae(kc[ii],0,latdim) ## latent space, latent angle space
-            figureoutold0=vae.manifoldnd(d=1,ll=zlats,cmap='viridis')
-            datamod3 = cv2.blur(figureoutold0,(figure_size, figure_size))
-            # plt.imshow(datamod3)
-            figureoutold0 = datamod3
-            figureoutold0=normalize(figureoutold0,1)
-
-            nrow=1
-            ax=plt.subplot(nrow,int(len(iiall)/nrow),ii+1-iiall[0])     #将窗口分为两行两列四个子图，则可显示四幅图片
-            # plt.imshow(figureoutold0)
-            maskk=addmask(figureoutold0,plt.cm.jet,0,1)
-            plt.imshow(maskk,cmap=plt.cm.jet, interpolation='nearest', vmin=vminn, vmax=vmaxx)
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-            plt.rc('font',family='Times New Roman') 
-            plt.savefig('clustercenter'+str(nrot)+str(latdim)+str(inp2d)+'.png', dpi=600, transparent=True)
-    '''
-    check the quality of ssim in detail
-    '''
-
-
-# if inout_inp>0:©
-#     dataall=normalize(dataall,255)
-if latdim==2:
-
-    mserot=[]
-    mseold=[]
-    ssimrot=[]
-    ssimold=[]
-        
-    #for ii in range(0,len(z_mean_rvae)):
-    for ii in range(44,45):
-        figureout=rvae.manifold2d(d=1,l1=[z_mean_rvae[ii,1],z_mean_rvae[ii,1]],l2=[z_mean_rvae[ii,2],z_mean_rvae[ii,2]],cmap='viridis')
-        figureoutrot=rvae.manifold2d(d=1,l1=[z_mean_rvae[ii,1],z_mean_rvae[ii,1]],l2=[z_mean_rvae[ii,2],z_mean_rvae[ii,2]],theta=[z_mean_rvae[ii,0],z_mean_rvae[ii,0]],cmap='viridis')
-        figureoutold=vae.manifold2d(d=1,l1=[z_mean_vae[ii,0],z_mean_vae[ii,0]],l2=[z_mean_vae[ii,1],z_mean_vae[ii,1]],cmap='viridis')
-        mserot=mserot+[mse(inpput[ii,:,:,0],figureoutrot)]
-        mseold=mseold+[mse(inpput[ii,:,:,0],figureoutold)]
-        ssimrot=ssimrot+[ssim(inpput[ii,:,:,0],figureoutrot)]
-        ssimold=ssimold+[ssim(inpput[ii,:,:,0],figureoutold)]
-    
-    print([np.mean(mserot),np.mean(mseold),np.mean(ssimrot),np.mean(ssimold)])
-    plt.figure(figsize=(15,10))
-    ax=plt.subplot(1,3,1)     #将窗口分为两行两列四个子图，则可显示四幅图片
-    plt.imshow(255*inpput[ii,:,:,0],label = 'Validation loss')
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-#plt.imshow(255*(figureoutrot-inpput[ii,:,:,0]))
-
-mmm=[]
-for i in range(0, inpput.shape[0]):
-    
-    mmm= mmm+[np.mean(inpput[i,:,:,:])]
-
-
-mmm = np.asarray(mmm)
-indexx=np.argwhere(mmm==np.min(mmm))
-
-plt.figure(figsize=(15,10))
-for ii in range(1,4):
-    ax=plt.subplot(1,3,ii)     #将窗口分为两行两列四个子图，则可显示四幅图片
-    plt.imshow(255*inpput[indexx[ii-1][0],:,:,0],label = 'Validation loss')
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-
-filestring="peanutsad0.0241.2_figout"
-image_array1= sio.loadmat(filestring+'.mat')
-image_array1= image_array1['z1mod']
-image_array1[np.isnan(image_array1)] = 0
-filestring="dome0.0241.2_figout"
-image_array2= sio.loadmat(filestring+'.mat')
-image_array2= image_array2['z1mod']
-image_array2[np.isnan(image_array2)] = 0
-
-
-ypredict= image_array1.flatten()
-ytarget= image_array2.flatten()
-intersection = sum(ypredict * ytarget)
-dcoeff=(2. * intersection ) / (sum(ypredict *ypredict) + sum(ytarget * ytarget))
-print(str(dcoeff))
-
-
-filestring="peanut"
-image_array1= sio.loadmat(filestring+'.mat')
-image_array1= image_array1['z1mod']
-image_array1[np.isnan(image_array1)] = 0
-
-filestring="dome"
-image_array2= sio.loadmat(filestring+'.mat')
-image_array2= image_array2['z1mod']
-image_array2[np.isnan(image_array2)] = 0
-
-filestring="notoptimal"
-image_array3= sio.loadmat(filestring+'.mat')
-image_array3= image_array3['z1mod']
-image_array3[np.isnan(image_array3)] = 0
-
-blur = image_array1
-org = image_array1
-print("MSE: ", mse(blur,org))
-# print("RMSE: ", rmse(blur, org))
-# print("PSNR: ", psnr(blur, org))
-# print("SSIM: ", ssim(blur, org))
-print("UQI: ", uqi(blur, org))
-# print("MSSSIM: ", msssim(blur, org))
-print("ERGAS: ", ergas(blur, org))
-print("SCC: ", scc(blur, org))
-print("RASE: ", rase(blur, org))
-print("SAM: ", sam(blur, org))
-print("VIF: ", vifp(blur, org))
