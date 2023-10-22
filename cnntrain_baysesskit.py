@@ -58,16 +58,12 @@ def addmask(a,cmap,vminn,vmaxx):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 def p_root(value, root):
-     
     root_value = 1 / float(root)
     return round (Decimal(value) **
              Decimal(root_value), 3)
- 
 def minkowski_distance(x, y, p_value):
     return (p_root(sum(pow(abs(a-b), p_value)
             for a, b in zip(x, y)), p_value))
-
-
 class StoppingCriterion(EarlyStopper):
   def __init__(self, delta=0.05, n_best=10):
     super(EarlyStopper, self).__init__()
@@ -91,38 +87,16 @@ def normalize(figureout,maxx):
 def inputvae(inpp,inpang,latdim):
     zlats=np.zeros((latdim,2))
     zangs=np.zeros((1,2))
-    
     for ii in range(1,latdim+1):
         zlats[ii-1,:]=inpp[ii-1]
     zangs[0,:]=inpang
     return zlats, zangs
-
-def cropimg(imagedata):
-    image_array = np.array(imagedata)
-    print(image_array.shape)
-    dxx=int(50*1.5)
-    rr=1.5 ## rr=1  dingge
-
-    image_arraynew0 = image_array[int((dxx+27)/rr):int((-dxx-37)/rr),int((dxx+40)/rr):int((-dxx+10)/rr)]
-    print(str(np.min(image_arraynew0))+'_'+str(np.max(image_arraynew0)) )
-
-    imagedata = Image.fromarray(image_arraynew0)
-    #imagedata = imagedata.resize((dshape,dshape),Image.ANTIALIAS)    
-    image_arraynew0 = np.array(imagedata)
-    image_arraynew= image_arraynew0
-    #image_arraynew=(image_arraynew0-np.min(image_arraynew0))/(255-np.min(image_arraynew0))*255
-    image_arraynew=(255-image_arraynew)/255
-    print(str(np.min(image_arraynew))+'_'+str(np.max(image_arraynew)) )
-
-    imagedatanew = Image.fromarray(image_arraynew)
-    return imagedatanew
 
 def getytarget(ii,rot=120): 
     readstringd = ''
     if ii==2:
         filestring=readstringd+"saddle0.016_figout"
         screensize=1.0
-
     elif ii==43:
         filestring=readstringd+"peanutsad0.0241.20.8_figout"
         screensize=1.0    
@@ -133,23 +107,20 @@ def getytarget(ii,rot=120):
         filestring=readstringd+"peanutsad0.02721.20.8_figout"
         screensize=1.5
     elif ii==923:
-        filestring=readstringd+"flower0.0241.550.8_figout"#readstringd+"flower0.01610.8_figout"
+        filestring=readstringd+"flower0.0241.550.8_figout"
         screensize=1.5   
     elif ii==1121:
-        filestring=readstringd+"pyr0.0169711_figout"#"pyr0.0148491_figout"
+        filestring=readstringd+"pyr0.0169711_figout"
         screensize=1.5       
     elif ii==1123:
-        filestring=readstringd+"pyr0.02551.7_figout"#"pyr0.0148491_figout"
+        filestring=readstringd+"pyr0.02551.7_figout"
         screensize=1.5     
     elif ii==1124:
-        filestring=readstringd+"pyr0.02251.5_figoutflat"#"pyr0.0148491_figout"
+        filestring=readstringd+"pyr0.02251.5_figoutflat"
         screensize=1.5            
     elif ii==92:
-        filestring=readstringd+"flower0.0161.20.8_figout"#readstringd+"flower0.01610.8_figout"
+        filestring=readstringd+"flower0.0161.20.8_figout"
         screensize=1.0        
-    elif ii==102:
-        filestring=readstringd+"saddle0.0181.210_figout"
-        screensize=1.0
     elif ii==21:
         filestring=readstringd+"saddle0.024155_figout"
         screensize=1.5
@@ -181,18 +152,14 @@ def getytarget(ii,rot=120):
     imagedata= Image.fromarray(image_array)
     print(image_array.shape)
     print(str(image_array[0,0]),'_',str(np.max(image_array)),'_',str(np.min(image_array)))
-
-    
     imagedatarot=imagedata.rotate(rot, fillcolor=(0)) 
     data= np.array(imagedatarot)           
     ytarget = data
     
     xsize=np.array(imagedata).shape[0]
     ysize=np.array(imagedata).shape[1]    
-
-
     return ytarget,xsize,ysize
-smooth = 1. # 
+    
 def dice_coef(y_true, y_pred):
     y_true_f = y_true.flatten()# 
     y_pred_f = y_pred.flatten()
@@ -205,25 +172,20 @@ def dice_coef_loss(y_true, y_pred):
 def getypredict(num):
     readstringd = ''
     filestring=readstringd+"mvertr-test"+str(6)+"num"+str(num)+"_figout"
-
     image_array= sio.loadmat(filestring+'.mat')
     image_array= image_array['z1mod']
     image_array = image_array/maxheight#*1
     if indexy==2 or indexy==21:
         image_array = image_array+0.1
     image_array[np.isnan(image_array)] = 0
-
     imagedata= Image.fromarray(image_array)
-
     print(image_array.shape)
     print(str(image_array[0,0]),'_',str(np.max(image_array)),'_',str(np.min(image_array)))
-   
     data= np.array(imagedata)           
     ytarget =data
     xsize=np.array(imagedata).shape[0]
     ysize=np.array(imagedata).shape[1]
     print(str(np.min(ytarget))+ '_'+str(np.max(ytarget)))
-
     return ytarget,xsize,ysize
 
 def SSIMLoss(y_true, y_pred):
@@ -255,31 +217,8 @@ def SSIMLossnum(y_true, y_pred):
     outt = 1+msec
     print('ees'+str(msec)+ str(outt))    
     return np.float32(outt), np.float32(msec)
-def SSIMLoss_ms(y_true, y_pred):
-    return 1 - tf.reduce_mean(tf.image.ssim_multiscale(
-        y_true, y_pred,  filter_size=5,
-        filter_sigma=1.5, k1=0.01, k2=0.03
-    ))
-
-def SSIMLoss_msnum(y_true, y_pred):
-  y_true0 = tf.constant(y_true/1.0,dtype=tf.float64)
-  y_pred0 = tf.constant(y_pred/1.0,dtype=tf.float64)    
-  return 1 - tf.reduce_mean(tf.image.ssim_multiscale(
-        y_true0, y_pred0,  filter_size=5,
-        filter_sigma=1.5, k1=0.01, k2=0.03
-    ))
-def getfuncsvaepred():
-    stringsavemod='modelkirgamivaepredictor'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)
-
-    json_file = open(stringsavemod+'.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-    loaded_model.load_weights(stringsavemod+'.h5')
-        
-    return loaded_model
-def getfunc():
     
+def getfunc():
     stringsavemod='modelkirgamiforwardnrotvert'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)       
     # load json and create model
     json_file = open(stringsavemod+'.json', 'r')
@@ -292,18 +231,14 @@ def getfunc():
     return loaded_model
 
 def getfuncmyvae(x, rt=1, pretrained=0):
-    
-    
     [zlatsold, zangsold]=flib.inputvae(x,0,latdim) ## latent space, latent angle space
     figureoutold=vae.manifoldnd(d=1,ll=zlatsold,cmap='viridis')
     print(figureoutold.shape)
-    
     scalee = 1.2
     figureoutoldn = normalize(figureoutold,scalee)
 
     if rt==20 or pretrained==1:
         figureoutoldn = figureoutoldn+basescale*figureoutoldbase
-    
         index1=np.argwhere(figureoutoldn>1/2)
         index2=np.argwhere(figureoutoldn<=1/2)
         figureoutoldn[index1[:,0],index1[:,1]]=1
@@ -904,7 +839,6 @@ if rtall==2 or rtall==20:
         print(x0)
 
         for ncc in range(0,rows):
-            
             x0[ncc]=list(inpall[-1,:])+[.2/5*(ncc+1)]
             msee=black_box_functionrt(x0[ncc], noise_level=0.001)
             y0=y0+[msee]
