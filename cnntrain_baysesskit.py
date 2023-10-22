@@ -264,7 +264,6 @@ def getfuncmyvae(x, rt=1, pretrained=0):
     ok =1
     return ok
 def getfuncrt():
-    
     stringsavemod='modelkirgamiforwardnrotvert'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)       
     # load json and create model
     json_file = open(stringsavemod+'.json', 'r')
@@ -287,13 +286,6 @@ def getfuncimg():
     print("Loaded model from disk")
         
     return loaded_model
-
-def getfuncvae():
-    vaeinp=aoi.models.load_model("my2d_modelvaevert"+str(nrot)+str(latdim)+"vae.tar")## input the whole model
-    vaeinp=aoi.models.load_model("my2d_modelvaelotuscombined"+str(nrot)+str(latdim)+"vae.tar")## input the whole model
-
-    vae=vaeinp
-    return vae
 
 def getfuncvaeall(inputnum,nrot,latdim):
     if inputnum==0:
@@ -320,18 +312,12 @@ def getfuncvaeall(inputnum,nrot,latdim):
         stringss="my2d_modelvaecircquad5np"+str(nrot)+str(latdim)+"vae.tar"
     elif inputnum==101:
         stringss="my2d_modelvaeflcircquad11nrotnp"+str(nrot)+str(latdim)+"vae.tar"
-
-
     vaeinp=aoi.models.load_model(stringss)## input the whole model
     print(stringss)
     vae=vaeinp
     return vae
 def black_box_functionrt(x, noise_level=0.01):
-    """Function with unknown internals we wish to maximize.
-
-    This is just serving as an example, for all intents and
-    purposes think of the internals of this function, i.e.: the process
-    which generates its output values, as unknown.
+    """Function with unknown internals we wish to maximize
     """
     wsize=sio.loadmat("wsize.mat")
     if wsize ==0:
@@ -342,7 +328,6 @@ def black_box_functionrt(x, noise_level=0.01):
     print(x)
     if solid ==1:
             ok=eng.Main_trycutsimplified_verticalcuts_arb_funcwsize3d(float(x[-2]), float(x[-1])/10)
-       
     else:
         if wsize ==0:
             ok=eng.Main_trycutsimplified_verticalcuts_arb_func(float(x[-1])/10)   
@@ -353,7 +338,6 @@ def black_box_functionrt(x, noise_level=0.01):
     print(str(prestretch)+str(x[-1]))
     ytarget,xsizetarget,ysizetarget=getytarget(indexy,grot) ## 3d
     print('next')
-    
     ypred,xsizepred,ysizepred = getypredict(ncount) ## 3d
     print(str(xsizetarget)+str(ysizetarget)+str(xsizepred)+str(ysizepred))
     ypred.resize((1,dshape,dshape,1))
@@ -379,16 +363,12 @@ def black_box_functionrt(x, noise_level=0.01):
     filef.write('\ n')
     filef.flush()
     filef.close()
-    return msee #-x ** 2 - (y - 1) ** 2 + 1
+    return msee 
 
 
 
 def black_box_function(x, noise_level=0.01):
     """Function with unknown internals we wish to maximize.
-
-    This is just serving as an example, for all intents and
-    purposes think of the internals of this function, i.e.: the process
-    which generates its output values, as unknown.
     """
     ytarget,xsizetarget,ysizetarget=getytarget(indexy,grot)
     fnn = getfunc()
@@ -400,8 +380,7 @@ def black_box_function(x, noise_level=0.01):
     ytargeta= ypred*0.0
     ytargeta[0,:,:,0]=ytarget
     msee, msec= SSIMLossnum(ypred[0:1,:,:,0:1],ytargeta)
-#    msee= tf_ms_ssim(tf.constant(ypred[0:1,:,:,0:1]/1.0,dtype=tf.float32),tf.constant(ytargeta/1.0,dtype=tf.float32)).numpy()
-    return msee #-x ** 2 - (y - 1) ** 2 + 1
+    return msee 
 
 def _tf_fspecial_gauss(size, sigma):
     """Function to mimic the 'fspecial' gaussian MATLAB function
