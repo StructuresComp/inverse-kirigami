@@ -4,6 +4,13 @@ This repository contains the code for the paper:
 
 Here, we propose a rapid design approach for fully soft structures that can achieve targeted 3D shapes through a fabrication process that happens entirely on a 2D plane. We develop a symmetry constrained active learning approach to learn how to explore the large design space efficiently. The proposed framework can accelerate adoption of morphing structures in a range of areas including soft robotics, additive manufacturing, and construction industry.
 
+`cnntrain_vae.py` performs variational autoencoder to reduce the dimension of candidate kirigami patterns to low dimension representations. 
+`cnntrainv2_baysesskit.py` performs Bayesian optimization. The "gp_minimize" function (a function in scikit-optimize) conducts Bayesian optimization using Gaussian Processes. 
+In other words the function values are assumed to follow a multivariate gaussian. The covariance of the function values are given by a GP kernel between the parameters. Then a smart choice to choose the next parameter to evaluate can be made by the acquisition function over the Gaussian prior which is much quicker to evaluate.
+
+"black_box_functionrt" is used to compare the 3D deformation pattern predicted by ABAQUS and the desired shape. 
+
+
 ## Requirements
 To run the code, you must install the following dependencies first:
 - PyTorch (1.8.1)
