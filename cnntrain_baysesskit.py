@@ -103,9 +103,6 @@ def getytarget(ii,rot=120):
     elif ii==431:
         filestring=readstringd+"peanutsad0.0241.20.8_figout"
         screensize=1.5
-    elif ii==432:
-        filestring=readstringd+"peanutsad0.02721.20.8_figout"
-        screensize=1.5
     elif ii==923:
         filestring=readstringd+"flower0.0241.550.8_figout"
         screensize=1.5   
@@ -354,21 +351,6 @@ def black_box_functionrt(x, noise_level=0.01):
     filef.write('\ n')
     filef.flush()
     filef.close()
-    return msee 
-
-def black_box_function(x, noise_level=0.01):
-    """Function with unknown internals we wish to maximize.
-    """
-    ytarget,xsizetarget,ysizetarget=getytarget(indexy,grot)
-    fnn = getfunc()
-    xall= x
-    xall=[x]
-    ypred = fnn.predict(xall)#.values())
-
-#    msee=np.mean((ypred[0,:,:,0]-ytarget)**2)
-    ytargeta= ypred*0.0
-    ytargeta[0,:,:,0]=ytarget
-    msee, msec= SSIMLossnum(ypred[0:1,:,:,0:1],ytargeta)
     return msee 
 
 def _tf_fspecial_gauss(size, sigma):
@@ -777,51 +759,27 @@ Start the bayesian optimization
 '''
 from skopt import gp_minimize
 rt= rtall+0
-if rtall==0:
-    print('rtall'+str(0))
-    res = gp_minimize(black_box_function,                  # the function to minimize
-                      pbounds,      # the bounds on each dimension of x
-                      x0=x0,
-                      y0=y0,
-                      acq_func="EI",      # the acquisition function
-                      n_calls=numcalls,         # the number of evaluations of f
-                      n_random_starts=10,  # the number of random initialization points#                      callback=[checkpoint_saver],
-                      noise=0.1**2,       # the noise level (optional)
-                      random_state=1234)   # the random seed
-elif pretrained==100:
-    print('rtall'+str(200))
-    print ('ydes' + str(ydes))
+print('rtall'+str(1))
+x0 = []
+y0 = []
+if len(x0)>0:
     res = gp_minimize(black_box_functionrt,                  # the function to minimize
-                      pboundsdes,      # the bounds on each dimension of x
-                      x0=xdes,
-                      y0=ydes,
-                      acq_func="EI",      # the acquisition function
-                      n_calls=numcalls,         # the number of evaluations of f
-                      n_random_starts=0,  # the number of random initialization points
-                      noise=0.01**2,       # the noise level (optional)
-                      random_state=0)   # the random seed
-elif rtall==1 and pretrained==0:
-    print('rtall'+str(1))
-    x0 = []
-    y0 = []
-    if len(x0)>0:
-        res = gp_minimize(black_box_functionrt,                  # the function to minimize
-                        pbounds,      # the bounds on each dimension of x
-                        x0=x0,
-                        y0=y0,
-                        acq_func="EI",      # the acquisition function
-                        n_calls=numcalls,         # the number of evaluations of f
-                        n_random_starts=0,  # the number of random initialization points
-                        noise=0.01**2,       # the noise level (optional)
-                        random_state=0)   # the random seed       
-    else:
-        res = gp_minimize(black_box_functionrt,                  # the function to minimize
-                        pbounds,      # the bounds on each dimension of x
-                        acq_func="EI",      # the acquisition function
-                        n_calls=numcalls,         # the number of evaluations of f
-                        n_random_starts=10,  # the number of random initialization points
-                        noise=0.01**2,       # the noise level (optional)
-                        random_state=60)   # the random seed50 40  30 20  1234  
+                    pbounds,      # the bounds on each dimension of x
+                    x0=x0,
+                    y0=y0,
+                    acq_func="EI",      # the acquisition function
+                    n_calls=numcalls,         # the number of evaluations of f
+                    n_random_starts=0,  # the number of random initialization points
+                    noise=0.01**2,       # the noise level (optional)
+                    random_state=0)   # the random seed       
+else:
+    res = gp_minimize(black_box_functionrt,                  # the function to minimize
+                    pbounds,      # the bounds on each dimension of x
+                    acq_func="EI",      # the acquisition function
+                    n_calls=numcalls,         # the number of evaluations of f
+                    n_random_starts=10,  # the number of random initialization points
+                    noise=0.01**2,       # the noise level (optional)
+                    random_state=60)   # the random seed50 40  30 20  1234  
 numcallsall = numcalls+numcallsinit
 minerr=np.zeros((numcallsall,1))
 for ii in range (0,numcallsall):
