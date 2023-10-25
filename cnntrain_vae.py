@@ -92,22 +92,6 @@ def normalize(figureout,maxx):
     figureout[index1[:,0],index1[:,1]]=maxx
     figureout[index2[:,0],index2[:,1]]=0
     return figureout
-class Dataset(torch.utils.data.Dataset):
-
-    def __init__(self, X):
-        
-        self.X = X
-
-        
-    def __len__(self):
-        
-        return len(self.X)
-
-    def __getitem__(self, index):
-        
-        x = self.X[index]
-
-        return x
 
 readstringtr ='C:\\Users\\leixi\\Box\\codes\\'
 checksample=0
