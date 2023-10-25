@@ -528,15 +528,7 @@ print(np.max(dataall[10,:,:,:]))
 neigh = NearestNeighbors(n_neighbors=2,algorithm='kd_tree')
 neigh.fit(aall)
 
-if svae ==0:
-    vae=getfuncvaeall(inputnum,nrot,latdim)
-else:
-    niter = 0 
-    stringsavemod2decoder='modelkirgamivaedecoder'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)
-    stringsavemod2encoder='modelkirgamivaeencoder'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)
-    stringsavemod2predictor='modelkirgamivaepredictor'+str(nrot)+str(latdim)+str(embedd)+str(usemsssim)+str(niter)
-    encoder = flib.getfuncsvae(stringsavemod2encoder)
-    decoder = flib.getfuncsvae(stringsavemod2decoder)
+vae=getfuncvaeall(inputnum,nrot,latdim)
 
 ytarget,xsize,ysize=getytarget(indexy, grot)
 ytarget2,xsize,ysize=getytarget(indexy, grot)
