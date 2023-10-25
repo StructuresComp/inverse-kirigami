@@ -37,41 +37,6 @@ from torchvision import datasets, transforms
 from torchvision.utils import save_image
 import pandas as pd
 import cv2
-def addmask(a,cmap,vminn,vmaxx):
-    a = a.astype('float')
-    ia=np.argwhere(a==0)
-    for ii in range(0,ia.shape[0]):
-        a[ia[ii][0],ia[ii][1]]=float('nan')
-    # ax.set_facecolor('w')
-    # # plt.colorbar()
-    # plt.show()
-    masked_array = np.ma.array (a, mask=np.isnan(a))
-    # cmap.set_bad('white')
-    # ax.imshow(masked_array, interpolation='nearest', cmap=cmap, vmin=vminn, vmax=vmaxx)
-    # ax.get_xaxis().set_visible(False)
-    # ax.get_yaxis().set_visible(False)
-    return masked_array
-
-def rotaxis_general(imagedata,image_array, nrot ):
-    for i in range(0,image_array.shape[0]):
-        for j in range(0,image_array.shape[0]):
-            if np.sqrt((i-31)**2+(j-31)**2)>=image_array.shape[0]/2-3:
-                image_array[i,j]=255
-    imagedata = Image.fromarray(image_array)
-    datamod=255-image_array+0
-            
-        
-    for nii in range(0,nrot-1):
-        imagedatarot=imagedata.rotate(int(360/nrot*(nii+1)), fillcolor=(255))
-        imagedatarot_array=np.array(imagedatarot)
-        datamod=datamod+ 255-imagedatarot_array
-    datamod = normalize(datamod,100)
-    datamod = 255-datamod
-    figure_size=4
-    datamod3 = cv2.blur(datamod,(figure_size, figure_size))
-    # plt.imshow(datamod3)
-    datamod = datamod3
-    return datamod
 
 def mse(imageA, imageB):
     mse_error = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
@@ -143,60 +108,6 @@ class Dataset(torch.utils.data.Dataset):
         x = self.X[index]
 
         return x
-
-"""## Create a sampling layer"""
-
-class Sampling(layers.Layer):
-    """Uses (z_mean, z_log_var) to sample z, the vector encoding a digit."""
-
-    def call(self, inputs):
-        z_mean, z_log_var = inputs
-        batch = tf.shape(z_mean)[0]
-        dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
-
-class VAE(keras.Model):
-    def __init__(self, encoder, decoder, **kwargs):
-        super(VAE, self).__init__(**kwargs)
-        self.encoder = encoder
-        self.decoder = decoder
-        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = keras.metrics.Mean(
-            name="reconstruction_loss"
-        )
-        self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
-
-    @property
-    def metrics(self):
-        return [
-            self.total_loss_tracker,
-            self.reconstruction_loss_tracker,
-            self.kl_loss_tracker,
-        ]
-
-    def train_step(self, data):
-        with tf.GradientTape() as tape:
-            z_mean, z_log_var, z = self.encoder(data)
-            reconstruction = self.decoder(z)
-            reconstruction_loss = tf.reduce_mean(
-                tf.reduce_sum(
-                    keras.losses.binary_crossentropy(data, reconstruction), axis=(1, 2)
-                )
-            )
-            kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
-            kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + kl_loss
-        grads = tape.gradient(total_loss, self.trainable_weights)
-        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
-        self.total_loss_tracker.update_state(total_loss)
-        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
-        self.kl_loss_tracker.update_state(kl_loss)
-        return {
-            "loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "kl_loss": self.kl_loss_tracker.result(),
-        }
 
 readstringtr ='C:\\Users\\leixi\\Box\\codes\\'
 checksample=0
