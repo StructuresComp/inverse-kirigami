@@ -489,16 +489,6 @@ elif inp2d==2:
 else:
     df.to_csv('errorall'+str(nrot)+str(latdim)+str(inp2d)+'.csv',index=False,sep=',')        
 
-# z_mean_vae, z_sd_vae= vae.encode(test_imagesinput[:,:,:,0])
-# ssi=[]
-# for nii in range(0,test_imagesinput[:,:,:,0].shape[0]):
-#     [zlatsold, zangsold]=inputvae(z_mean_vae[nii,0:],0,latdim) ## latent space, latent angle space
-#     figureoutold=vae.manifoldnd(d=1,ll=zlatsold,cmap='viridis')
-#     if inp2d==0 or 2:
-#         scalee = 1.2
-#         figureoutold = normalize(figureoutold,scalee)
-#         figureoutold.resize(1,64,64,1)
-#     ssi=ssi+[SSIMLossnum(figureoutold,test_imagesinput[:,:,:,:])]
 '''
 Perturb to generate new designs. This step is independent of vae / rvae
 '''
